@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Complete Payment — Hotel Royal Stay{% endblock %}
+
+{% block content %}
+<div class="page-hero" style="padding:3rem 0;">
+  <div class="container">
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:white;">Secure Checkout</h1>
+    <p style="color:rgba(255,255,255,.55);">Complete your booking with our secure payment gateway</p>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-4 justify-content-center">
+
+    <!-- BOOKING SUMMARY -->
+    <div class="col-lg-4">
+      <div class="payment-summary sticky-top" style="top:90px;">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <div class="brand-icon small"><i class="fas fa-crown"></i></div>
+          <h5 class="mb-0" style="color:var(--gold-light);font-family:'Cormorant Garamond',serif;">Booking Summary</h5>
+        </div>
+        <hr style="border-color:rgba(255,255,255,.1);margin:1rem 0;">
+
+        <div class="payment-row"><span>Room</span><span>{{ booking.room.room_number }}</span></div>
+        <div class="payment-row"><span>Type</span><span>{{ booking.room.room_type.name }}</span></div>
+        <div class="payment-row"><span>Check-in</span><span>{{ booking.check_in_date }}</span></div>
+        <div class="payment-row"><span>Check-out</span><span>{{ booking.check_out_date }}</span></div>
+        <div class="payment-row"><span>Guests</span><span>{{ booking.number_of_guests }}</span></div>
+        <div class="payment-row"><span>Duration</span><span>{{ booking.nights }} night{% if booking.nights != 1 %}s{% endif %}</span></div>
+        <div class="payment-row"><span>Rate/night</span><span>₹{{ booking.room.room_type.price_per_night }}</span></div>
+
+        <div class="payment-row total">
+          <span style="font-weight:600;">Total Amount</span>
+          <span>₹{{ booking.total_price }}</span>
+        </div>
+
+        <div class="mt-3 p-2 text-center" style="background:rgba(255,255,255,.05);border-radius:8px;font-size:.78rem;color:rgba(255,255,255,.5);">
+          <i class="fas fa-lock me-1"></i> 256-bit SSL Encrypted · PCI DSS Compliant
+        </div>
+      </div>
+    </div>
+
+    <!-- PAYMENT FORM -->
+    <div class="col-lg-6">
+      <div class="form-card">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.8rem;margin-bottom:1.5rem;">Choose Payment Method</h3>
+
+        <!-- RAZORPAY OPTION -->
+        <div class="mb-4 p-3" style="border:2px solid #2db4c5;border-radius:12px;background:rgba(45,180,197,.04);">
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <div style="background:#2db4c5;width:40px;height:40px;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+              <i class="fas fa-bolt" style="color:white;"></i>
+            </div>
+            <div>
+              <strong>Pay with Razorpay</strong>
+              <div style="font-size:.78rem;color:var(--text-light);">UPI · Cards · Net Banking · Wallets</div>
+            </div>
+            <span class="ms-auto" style="font-size:.72rem;background:#2db4c5;color:white;padding:.2rem .6rem;border-radius:50px;">Recommended</span>
+          </div>
+          <button onclick="payWithRazorpay()" class="razorpay-btn">
+            <i class="fas fa-bolt"></i> Pay ₹{{ booking.total_price }} with Razorpay
+          </button>
+        </div>
+
+        <!-- DIVIDER -->
+        <div class="d-flex align-items-center gap-3 my-3">
+          <hr style="flex:1;"> <span style="color:var(--text-light);font-size:.82rem;">or pay directly</span> <hr style="flex:1;">
+        </div>
+
+        <!-- MANUAL PAYMENT FORM -->
+        <form method="POST" id="manualPaymentForm">
+          {% csrf_token %}
+          <input type="hidden" name="payment_method" id="payMethodField" value="upi">
+
+          <div class="mb-3">
+            <label class="form-label">Payment Method</label>
+            <select class="form-select" name="payment_method" onchange="document.getElementById('payMethodField').value=this.value">
+              <option value="upi">UPI</option>
+              <option value="credit_card">Credit Card</option>
+              <option value="debit_card">Debit Card</option>
+              <option value="cash">Cash at Reception</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label">Cardholder / Account Name</label>
+            <input type="text" class="form-control" placeholder="As on card / UPI ID" required>
+          </div>
+
+          <div class="mb-4 p-3" style="background:var(--ivory-dark);border-radius:var(--radius-sm);">
+            <div class="d-flex justify-content-between mb-1">
+              <span style="font-size:.88rem;color:var(--text-mid);">Booking Amount</span>
+              <strong>₹{{ booking.total_price }}</strong>
+            </div>
+            <div class="d-flex justify-content-between">
+              <span style="font-size:.88rem;color:var(--text-mid);">Taxes & Fees</span>
+              <span style="font-size:.88rem;color:var(--success);">₹0 (included)</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-primary-gold">
+            <i class="fas fa-lock me-2"></i> Confirm & Pay ₹{{ booking.total_price }}
+          </button>
+        </form>
+
+        <p class="text-center mt-3" style="font-size:.78rem;color:var(--text-light);">
+          <i class="fas fa-shield-alt me-1"></i>
+          Your payment information is encrypted and secure. Booking #{{ booking.id }}.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+function payWithRazorpay() {
+  var options = {
+    key: "{{ razorpay_key }}",
+    amount: {{ amount_paise }},
+    currency: "INR",
+    name: "Hotel Royal Stay",
+    description: "Booking #{{ booking.id }} — {{ booking.room.room_type.name }}",
+    image: "/static/images/logo.png",
+    order_id: "",  // In production: generate via Razorpay Orders API
+    handler: function(response) {
+      // Post payment details to confirm booking
+      var form = document.createElement('form');
+      form.method = 'POST';
+      form.action = '';
+
+      var fields = {
+        'csrfmiddlewaretoken': '{{ csrf_token }}',
+        'razorpay_payment_id': response.razorpay_payment_id || 'rp_' + Date.now(),
+        'razorpay_order_id': response.razorpay_order_id || '',
+        'payment_method': 'razorpay',
+      };
+      for (var k in fields) {
+        var inp = document.createElement('input');
+        inp.type = 'hidden'; inp.name = k; inp.value = fields[k];
+        form.appendChild(inp);
+      }
+      document.body.appendChild(form);
+      form.submit();
+    },
+    prefill: {
+      name: "{{ request.user.get_full_name|default:request.user.username }}",
+      email: "{{ request.user.email }}",
+    },
+    theme: { color: "#c9a96e" },
+    modal: { ondismiss: function() { console.log("Payment dismissed"); } }
+  };
+
+  // If Razorpay key is test/placeholder, show simulation
+  if (options.key.includes('your_key') || options.key.includes('test')) {
+    if (confirm("Razorpay test mode: Simulate a successful payment?")) {
+      var form = document.createElement('form');
+      form.method = 'POST'; form.action = '';
+      ['csrfmiddlewaretoken', 'razorpay_payment_id', 'payment_method'].forEach(function(name, i) {
+        var inp = document.createElement('input');
+        inp.type='hidden'; inp.name=name;
+        inp.value=['{{ csrf_token }}', 'pay_simulated_' + Date.now(), 'razorpay'][i];
+        form.appendChild(inp);
+      });
+      document.body.appendChild(form);
+      form.submit();
+    }
+  } else {
+    var rzp = new Razorpay(options);
+    rzp.open();
+  }
+}
+</script>
+{% endblock %}

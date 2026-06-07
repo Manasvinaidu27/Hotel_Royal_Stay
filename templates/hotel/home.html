@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Hotel Royal Stay — Luxury Hotel Hyderabad{% endblock %}
+
+{% block content %}
+<!-- HERO -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center g-5">
+      <div class="col-lg-6" data-aos="fade-right">
+        <div class="hero-badge"><i class="fas fa-crown"></i> Hyderabad's Premier Luxury Hotel</div>
+        <h1 class="hero-title">
+          Where Luxury<br>Meets <span>Comfort</span>
+        </h1>
+        <p class="hero-subtitle">Experience world-class hospitality in the heart of Hitech City. Elegance redefined, one stay at a time.</p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{% url 'room_list' %}" class="btn-hero-primary">
+            <i class="fas fa-calendar-check"></i> Book Now
+          </a>
+          <a href="{% url 'room_recommendations' %}" class="btn-hero-outline">
+            <i class="fas fa-magic"></i> AI Room Picks
+          </a>
+        </div>
+        <div class="hero-stats">
+          <div class="stat-item">
+            <div class="stat-num">{{ total_rooms }}+</div>
+            <div class="stat-label">Luxury Rooms</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">{{ happy_guests }}+</div>
+            <div class="stat-label">Happy Guests</div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-num">4.9</div>
+            <div class="stat-label">Avg. Rating</div>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 d-none d-lg-block">
+        <div class="hero-image-side">
+          <div class="hero-img-card" style="overflow:hidden;border-radius:var(--radius);">
+            <img src="{% static 'images/hotel_front.png' %}"
+                 alt="Hotel Royal Stay"
+                 style="width:100%;height:100%;object-fit:cover;object-position:center top;border-radius:inherit;display:block;">
+          </div>
+          <div class="floating-card top-right">
+            <div class="d-flex align-items-center gap-2">
+              <div style="color:#f59e0b;font-size:1.1rem;"><i class="fas fa-star"></i></div>
+              <div>
+                <div style="font-weight:700;font-size:.95rem;">4.9 / 5</div>
+                <div style="font-size:.72rem;color:#8a94a6;">Guest Rating</div>
+              </div>
+            </div>
+          </div>
+          <div class="floating-card bottom-left">
+            <div class="d-flex align-items-center gap-2">
+              <div style="background:linear-gradient(135deg,#c9a96e,#a07840);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-check" style="color:white;font-size:.8rem;"></i>
+              </div>
+              <div>
+                <div style="font-weight:600;font-size:.85rem;">Instant Confirmation</div>
+                <div style="font-size:.72rem;color:#8a94a6;">Razorpay Secured</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ROOM TYPES PREVIEW -->
+{% if room_types %}
+<section class="py-5" style="background:var(--ivory);">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="section-label">Our Rooms</span>
+      <h2 class="section-title">Tailored for Every Guest</h2>
+      <p class="section-subtitle">From cozy standard rooms to lavish suites — discover your perfect retreat.</p>
+    </div>
+    <div class="row g-4">
+      {% for rt in room_types %}
+      <div class="col-lg-4 col-md-6">
+        <div class="room-card">
+          <div class="room-card-img">
+            <img src="{{ rt.image_url }}" alt="{{ rt.name }}" onerror="this.style.display='none'">
+            <span class="room-badge">From ₹{{ rt.price_per_night }}/night</span>
+          </div>
+          <div class="room-card-body">
+            <div class="room-type-name">{{ rt.name }}</div>
+            <p class="text-muted small mb-3">{{ rt.description|truncatechars:90 }}</p>
+            <div class="room-amenity-list">
+              {% for amenity in rt.amenities|truncatechars:60|slice:":3" %}{% endfor %}
+              <span class="amenity-tag"><i class="fas fa-users me-1"></i>Up to {{ rt.capacity }} guests</span>
+              <span class="amenity-tag"><i class="fas fa-wifi me-1"></i>Free WiFi</span>
+              <span class="amenity-tag"><i class="fas fa-snowflake me-1"></i>AC</span>
+            </div>
+            <div class="room-footer">
+              <div class="room-price">
+                <span class="price-amount">₹{{ rt.price_per_night }}</span>
+                <span class="price-night">/night</span>
+              </div>
+              <a href="{% url 'room_list' %}" class="btn-view-room">View Rooms <i class="fas fa-arrow-right"></i></a>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="text-center mt-4">
+      <a href="{% url 'room_list' %}" class="btn-hero-primary" style="display:inline-flex;">
+        Browse All Rooms <i class="fas fa-arrow-right ms-2"></i>
+      </a>
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- FEATURES -->
+<section class="features-section">
+  <div class="container">
+    <div class="text-center mb-5">
+      <span class="section-label" style="color:var(--gold);">Why Choose Us</span>
+      <h2 class="section-title" style="color:white;">A Complete Luxury Experience</h2>
+    </div>
+    <div class="row g-4">
+      {% for icon, title, desc in features %}
+      <div class="col-lg-3 col-md-6">
+        <div class="feature-card">
+          <div class="feature-icon-wrap"><i class="{{ icon }}"></i></div>
+          <h5>{{ title }}</h5>
+          <p>{{ desc }}</p>
+        </div>
+      </div>
+      {% empty %}
+      {% for item in "1234" %}
+      <div class="col-lg-3 col-md-6">
+        <div class="feature-card">
+          {% if forloop.counter == 1 %}<div class="feature-icon-wrap"><i class="fas fa-concierge-bell"></i></div><h5>24/7 Concierge</h5><p>Round-the-clock dedicated service to cater to your every need.</p>
+          {% elif forloop.counter == 2 %}<div class="feature-icon-wrap"><i class="fas fa-wifi"></i></div><h5>Blazing WiFi</h5><p>High-speed fibre internet across all rooms and public spaces.</p>
+          {% elif forloop.counter == 3 %}<div class="feature-icon-wrap"><i class="fas fa-utensils"></i></div><h5>Fine Dining</h5><p>Award-winning restaurant featuring local and international cuisine.</p>
+          {% else %}<div class="feature-icon-wrap"><i class="fas fa-shield-alt"></i></div><h5>Secure Payments</h5><p>Razorpay-powered payments — fast, safe, and fully encrypted.</p>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="py-5" style="background:var(--ivory-dark);">
+  <div class="container text-center py-4">
+    <span class="section-label">Ready?</span>
+    <h2 class="section-title">Plan Your Perfect Stay Today</h2>
+    <p class="section-subtitle mb-4">Use our AI-powered room picker to find the ideal room for your needs and budget.</p>
+    <div class="d-flex gap-3 justify-content-center flex-wrap">
+      <a href="{% url 'room_recommendations' %}" class="btn-hero-primary" style="display:inline-flex;">
+        <i class="fas fa-magic"></i> Try AI Room Picker
+      </a>
+      <a href="{% url 'room_list' %}" class="btn-hero-outline" style="color:var(--navy);border-color:var(--navy);display:inline-flex;">
+        Browse All Rooms
+      </a>
+    </div>
+  </div>
+</section>
+{% endblock %}

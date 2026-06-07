@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block title %}My Bookings — Hotel Royal Stay{% endblock %}
+
+{% block content %}
+<div class="page-hero" style="padding:3rem 0;">
+  <div class="container">
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:white;">My Bookings</h1>
+    <p style="color:rgba(255,255,255,.55);">Track and manage all your reservations</p>
+  </div>
+</div>
+
+<div class="container py-5">
+  {% if bookings %}
+  {% for booking in bookings %}
+  <div class="booking-card">
+    <div class="booking-card-header">
+      <div>
+        <strong style="font-size:1.05rem;">Booking #{{ booking.id }}</strong>
+        <span class="text-muted ms-2" style="font-size:.82rem;">{{ booking.created_at|date:"d M Y" }}</span>
+      </div>
+      <span class="status-badge {{ booking.status }}">{{ booking.get_status_display }}</span>
+    </div>
+    <div class="booking-card-body">
+      <div class="row g-3 align-items-center">
+        <div class="col-md-4">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.25rem;">Room</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.2rem;font-weight:700;">{{ booking.room.room_type.name }}</div>
+          <div style="font-size:.82rem;color:var(--text-mid);">Room {{ booking.room.room_number }}</div>
+        </div>
+        <div class="col-md-3">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.25rem;">Stay</div>
+          <div style="font-size:.9rem;font-weight:600;">{{ booking.check_in_date }} → {{ booking.check_out_date }}</div>
+          <div style="font-size:.82rem;color:var(--text-mid);">{{ booking.nights }} night{% if booking.nights != 1 %}s{% endif %} · {{ booking.number_of_guests }} guest{% if booking.number_of_guests != 1 %}s{% endif %}</div>
+        </div>
+        <div class="col-md-2">
+          <div style="font-size:.75rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.25rem;">Total</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--navy);">₹{{ booking.total_price|floatformat:0 }}</div>
+        </div>
+        <div class="col-md-3 d-flex gap-2 justify-content-md-end flex-wrap">
+          <a href="{% url 'booking_details' booking.id %}" class="btn-view-room" style="font-size:.82rem;">View Details</a>
+          {% if booking.status == 'pending' %}
+            <a href="{% url 'payment' booking.id %}" class="btn-book" style="font-size:.82rem;padding:.45rem 1rem;">Pay Now</a>
+          {% endif %}
+          {% if booking.status in 'pending,confirmed' %}
+            <a href="{% url 'cancel_booking' booking.id %}" class="btn btn-sm btn-outline-danger"
+               onclick="return confirm('Cancel this booking?')">Cancel</a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="text-center py-5">
+    <i class="fas fa-calendar-times" style="font-size:3.5rem;color:var(--text-light);margin-bottom:1.5rem;display:block;"></i>
+    <h3 style="font-family:'Cormorant Garamond',serif;">No bookings yet</h3>
+    <p class="text-muted mb-4">Start your luxury experience today</p>
+    <a href="{% url 'room_list' %}" class="btn-hero-primary" style="display:inline-flex;">
+      Browse Rooms <i class="fas fa-arrow-right ms-2"></i>
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

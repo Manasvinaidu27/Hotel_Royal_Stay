@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block title %}Booking #{{ booking.id }} — Hotel Royal Stay{% endblock %}
+
+{% block content %}
+
+<!-- PAGE HERO -->
+<div class="page-hero">
+  <div class="container">
+    <span class="section-label" style="color:var(--gold);display:block;margin-bottom:.5rem;">Reservation</span>
+    <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.8rem;color:white;margin-bottom:.25rem;">
+      Booking #{{ booking.id }}
+    </h1>
+    <p style="color:rgba(255,255,255,.55);">
+      Placed on {{ booking.created_at|date:"d M Y, H:i" }} &nbsp;·&nbsp;
+      <span class="status-badge {{ booking.status }}" style="font-size:.78rem;">{{ booking.status|title }}</span>
+    </p>
+  </div>
+</div>
+
+<div class="container py-5">
+  <div class="row g-4 justify-content-center">
+
+    <!-- LEFT: PRICE SUMMARY SIDEBAR -->
+    <div class="col-lg-4 order-lg-2">
+      <div class="payment-summary sticky-top" style="top:90px;">
+        <div class="d-flex align-items-center gap-2 mb-1">
+          <div class="brand-icon small"><i class="fas fa-crown"></i></div>
+          <h5 class="mb-0" style="color:var(--gold-light);font-family:'Cormorant Garamond',serif;">Price Summary</h5>
+        </div>
+        <hr style="border-color:rgba(255,255,255,.1);margin:1rem 0;">
+
+        <div class="payment-row">
+          <span>Room</span>
+          <span>{{ booking.room.room_number }}</span>
+        </div>
+        <div class="payment-row">
+          <span>Type</span>
+          <span>{{ booking.room.room_type.name }}</span>
+        </div>
+        <div class="payment-row">
+          <span>Rate / night</span>
+          <span>₹{{ booking.room.room_type.price_per_night }}</span>
+        </div>
+        <div class="payment-row">
+          <span>Nights</span>
+          <span>{{ booking.nights }}</span>
+        </div>
+
+        <div class="payment-row total">
+          <span style="font-weight:600;">Total Amount</span>
+          <span style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;">₹{{ booking.total_price }}</span>
+        </div>
+
+        <!-- Payment status pill -->
+        {% if payment %}
+        <div class="mt-3 p-2 text-center" style="background:rgba(45,106,79,.2);border-radius:8px;font-size:.78rem;color:#6fcf97;">
+          <i class="fas fa-check-circle me-1"></i> Payment {{ payment.status|title }}
+        </div>
+        {% elif booking.status != "cancelled" %}
+        <div class="mt-3">
+          <a href="{% url 'payment' booking.id %}" class="btn-primary-gold" style="display:block;text-align:center;">
+            <i class="fas fa-credit-card me-2"></i> Pay Now
+          </a>
+        </div>
+        {% endif %}
+
+        <!-- Action buttons -->
+        <div class="d-flex flex-column gap-2 mt-3">
+          <a href="{% url 'my_bookings' %}" class="btn btn-outline-secondary" style="border-radius:10px;padding:.65rem;font-size:.85rem;text-align:center;">
+            <i class="fas fa-arrow-left me-1"></i> Back to My Bookings
+          </a>
+          {% if booking.status == "pending" or booking.status == "confirmed" %}
+          <a href="{% url 'cancel_booking' booking.id %}"
+             class="btn btn-outline-danger"
+             style="border-radius:10px;padding:.65rem;font-size:.85rem;text-align:center;"
+             onclick="return confirm('Are you sure you want to cancel this booking?')">
+            <i class="fas fa-times me-1"></i> Cancel Booking
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: DETAIL CARDS -->
+    <div class="col-lg-8 order-lg-1">
+
+      <!-- Room Details -->
+      <div class="form-card mb-4">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;margin-bottom:1.25rem;">
+          <i class="fas fa-hotel me-2" style="color:var(--gold);"></i>Room Details
+        </h3>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Room Type</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.room.room_type.name }}</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Room Number</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.room.room_number }}</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Floor</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.room.floor_number }}</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Check-in</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.check_in_date }}</div>
+            </div>
+          </div>
+          <div class="col-sm-4">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Check-out</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.check_out_date }}</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Guest Information -->
+      <div class="form-card mb-4">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;margin-bottom:1.25rem;">
+          <i class="fas fa-user me-2" style="color:var(--gold);"></i>Guest Information
+        </h3>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Full Name</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.guest.get_full_name }}</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Email</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.guest.email }}</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Number of Guests</div>
+              <div style="font-weight:700;font-size:1rem;">{{ booking.number_of_guests }}</div>
+            </div>
+          </div>
+          {% if booking.special_requests %}
+          <div class="col-12">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Special Requests</div>
+              <div style="font-size:.9rem;color:var(--text-mid);">{{ booking.special_requests }}</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Payment Information -->
+      {% if payment %}
+      <div class="form-card">
+        <h3 style="font-family:'Cormorant Garamond',serif;font-size:1.7rem;margin-bottom:1.25rem;">
+          <i class="fas fa-credit-card me-2" style="color:var(--gold);"></i>Payment Information
+        </h3>
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Payment Status</div>
+              <div>
+                <span class="status-badge {{ payment.status }}" style="font-size:.82rem;">{{ payment.status|title }}</span>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Payment Method</div>
+              <div style="font-weight:700;font-size:1rem;">{{ payment.get_payment_method_display }}</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Amount Paid</div>
+              <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--navy);">₹{{ payment.amount }}</div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Payment Date</div>
+              <div style="font-weight:700;font-size:1rem;">{{ payment.payment_date|date:"d M Y, H:i" }}</div>
+            </div>
+          </div>
+          {% if payment.transaction_id %}
+          <div class="col-12">
+            <div style="background:var(--ivory-dark);border-radius:var(--radius-sm);padding:1rem;">
+              <div style="font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-light);margin-bottom:.35rem;">Transaction ID</div>
+              <div style="font-family:monospace;font-size:.88rem;color:var(--text-mid);">{{ payment.transaction_id }}</div>
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+{% endblock %}

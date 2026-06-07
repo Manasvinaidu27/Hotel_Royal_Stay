@@ -1,0 +1,254 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard — Hotel Royal Stay{% endblock %}
+
+{% block extra_css %}
+<style>
+.occ-bar { height: 8px; border-radius: 4px; background: linear-gradient(90deg, var(--gold), var(--gold-dark)); }
+.today-pill { background:rgba(201,169,110,.1); border:1px solid rgba(201,169,110,.2); border-radius:var(--radius-sm); padding:.75rem 1.25rem; }
+table thead th { font-size:.78rem; text-transform:uppercase; letter-spacing:.06em; color:var(--text-light); font-weight:600; border-top:none; }
+table tbody td { font-size:.9rem; vertical-align:middle; }
+.booking-status-dot { width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:5px; }
+.dot-confirmed{background:#2d6a4f;} .dot-pending{background:#c9a96e;} .dot-cancelled{background:#c0392b;} .dot-completed{background:#0d1b2a;}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
+      <div>
+        <h1 style="font-family:'Cormorant Garamond',serif;font-size:2.5rem;color:white;margin-bottom:.25rem;">
+          Analytics Dashboard
+        </h1>
+        <p style="color:rgba(255,255,255,.55);margin:0;">Hotel Royal Stay — Real-time performance overview</p>
+      </div>
+      <div class="d-flex gap-2">
+        <div class="today-pill text-center">
+          <div style="font-size:.7rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;">Today's Check-ins</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold);line-height:1;">{{ todays_checkins }}</div>
+        </div>
+        <div class="today-pill text-center">
+          <div style="font-size:.7rem;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:.08em;">Today's Check-outs</div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.6rem;color:var(--gold);line-height:1;">{{ todays_checkouts }}</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container py-4">
+
+  <!-- KPI CARDS ROW 1 -->
+  <div class="row g-3 mb-4">
+    <div class="col-xl-3 col-md-6">
+      <div class="stat-card">
+        <div class="stat-card-icon gold"><i class="fas fa-rupee-sign"></i></div>
+        <div class="stat-value">₹{{ total_revenue|floatformat:0 }}</div>
+        <div class="stat-label">Total Revenue</div>
+        <div class="stat-sub">Monthly: ₹{{ monthly_revenue|floatformat:0 }}</div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="stat-card">
+        <div class="stat-card-icon navy"><i class="fas fa-calendar-check"></i></div>
+        <div class="stat-value">{{ total_bookings }}</div>
+        <div class="stat-label">Total Bookings</div>
+        <div class="stat-sub">{{ confirmed }} confirmed · {{ pending }} pending</div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="stat-card">
+        <div class="stat-card-icon green"><i class="fas fa-door-open"></i></div>
+        <div class="stat-value">{{ occupancy_rate }}%</div>
+        <div class="stat-label">Occupancy Rate</div>
+        <div class="mt-2"><div class="occ-bar" style="width:{{ occupancy_rate }}%;"></div></div>
+      </div>
+    </div>
+    <div class="col-xl-3 col-md-6">
+      <div class="stat-card">
+        <div class="stat-card-icon red"><i class="fas fa-times-circle"></i></div>
+        <div class="stat-value">{{ cancelled }}</div>
+        <div class="stat-label">Cancellations</div>
+        <div class="stat-sub">{{ completed }} completed stays</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ROOM STATUS ROW -->
+  <div class="row g-3 mb-4">
+    <div class="col-lg-4 col-md-6">
+      <div class="stat-card d-flex align-items-center gap-3">
+        <div class="stat-card-icon green" style="flex-shrink:0;margin:0;"><i class="fas fa-check-circle"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:1.8rem;">{{ available_rooms }}</div>
+          <div class="stat-label">Available Rooms</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="stat-card d-flex align-items-center gap-3">
+        <div class="stat-card-icon navy" style="flex-shrink:0;margin:0;"><i class="fas fa-bed"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:1.8rem;">{{ occupied_rooms }}</div>
+          <div class="stat-label">Occupied Rooms</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4 col-md-6">
+      <div class="stat-card d-flex align-items-center gap-3">
+        <div class="stat-card-icon gold" style="flex-shrink:0;margin:0;"><i class="fas fa-tools"></i></div>
+        <div>
+          <div class="stat-value" style="font-size:1.8rem;">{{ maintenance_rooms }}</div>
+          <div class="stat-label">Under Maintenance</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHARTS ROW -->
+  <div class="row g-4 mb-4">
+    <div class="col-lg-8">
+      <div class="chart-card">
+        <div class="chart-title">Monthly Revenue (Last 6 Months)</div>
+        <canvas id="revenueChart" height="100"></canvas>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="chart-card h-100">
+        <div class="chart-title">Booking Status</div>
+        <canvas id="statusChart"></canvas>
+        <div class="mt-3">
+          {% for label, count, color in booking_status_list %}{% endfor %}
+          <div class="d-flex flex-column gap-2 mt-3">
+            <div class="d-flex justify-content-between align-items-center">
+              <span style="font-size:.84rem;"><span class="booking-status-dot dot-confirmed"></span>Confirmed</span>
+              <strong>{{ confirmed }}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span style="font-size:.84rem;"><span class="booking-status-dot dot-pending"></span>Pending</span>
+              <strong>{{ pending }}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span style="font-size:.84rem;"><span class="booking-status-dot dot-cancelled"></span>Cancelled</span>
+              <strong>{{ cancelled }}</strong>
+            </div>
+            <div class="d-flex justify-content-between align-items-center">
+              <span style="font-size:.84rem;"><span class="booking-status-dot dot-completed"></span>Completed</span>
+              <strong>{{ completed }}</strong>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT BOOKINGS TABLE -->
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <div class="chart-card">
+        <div class="chart-title">Recent Bookings</div>
+        <div class="table-responsive">
+          <table class="table table-hover mb-0">
+            <thead>
+              <tr>
+                <th>#ID</th>
+                <th>Guest</th>
+                <th>Room</th>
+                <th>Check-in</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for b in recent_bookings %}
+              <tr>
+                <td><strong>#{{ b.id }}</strong></td>
+                <td>{{ b.guest.get_full_name|default:b.guest.username }}</td>
+                <td>{{ b.room.room_number }} <small class="text-muted">({{ b.room.room_type.name }})</small></td>
+                <td>{{ b.check_in_date }}</td>
+                <td>₹{{ b.total_price|floatformat:0 }}</td>
+                <td><span class="status-badge {{ b.status }}">{{ b.get_status_display }}</span></td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="6" class="text-center text-muted py-3">No bookings yet</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="col-lg-4">
+      <div class="chart-card">
+        <div class="chart-title">Top Room Types</div>
+        {% for rt in top_rooms %}
+        <div class="d-flex align-items-center justify-content-between py-2 border-bottom">
+          <div>
+            <div style="font-weight:600;font-size:.9rem;">{{ rt.name }}</div>
+            <div style="font-size:.78rem;color:var(--text-light);">₹{{ rt.price_per_night }}/night</div>
+          </div>
+          <div style="text-align:right;">
+            <div style="font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:700;color:var(--gold);">{{ rt.booking_count }}</div>
+            <div style="font-size:.72rem;color:var(--text-light);">bookings</div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted text-center py-3">No data yet</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+const labels = {{ chart_labels|safe }};
+const revenues = {{ chart_revenue|safe }};
+
+// Revenue bar chart
+new Chart(document.getElementById('revenueChart'), {
+  type: 'bar',
+  data: {
+    labels: labels.length ? labels : ['No data'],
+    datasets: [{
+      label: 'Revenue (₹)',
+      data: revenues.length ? revenues : [0],
+      backgroundColor: 'rgba(201,169,110,0.25)',
+      borderColor: '#c9a96e',
+      borderWidth: 2,
+      borderRadius: 6,
+      hoverBackgroundColor: 'rgba(201,169,110,0.45)',
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+      y: { grid: { color: 'rgba(0,0,0,0.04)' }, ticks: { callback: v => '₹' + v.toLocaleString() } },
+      x: { grid: { display: false } }
+    }
+  }
+});
+
+// Donut status chart
+new Chart(document.getElementById('statusChart'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Confirmed', 'Pending', 'Cancelled', 'Completed'],
+    datasets: [{
+      data: [{{ confirmed }}, {{ pending }}, {{ cancelled }}, {{ completed }}],
+      backgroundColor: ['#2d6a4f', '#c9a96e', '#c0392b', '#0d1b2a'],
+      borderWidth: 0,
+      hoverOffset: 6,
+    }]
+  },
+  options: {
+    cutout: '72%',
+    plugins: { legend: { display: false } }
+  }
+});
+</script>
+{% endblock %}

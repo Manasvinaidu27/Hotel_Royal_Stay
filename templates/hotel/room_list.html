@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Browse Rooms — Hotel Royal Stay{% endblock %}
+
+{% block content %}
+<div class="page-hero">
+  <div class="container">
+    <h1>Our Rooms</h1>
+    <p>Find and book your perfect room</p>
+  </div>
+</div>
+
+<div class="container py-5">
+  <!-- SEARCH BAR -->
+  <div class="search-bar mb-5">
+    <form method="GET">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" style="font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);">Check-in</label>
+          {{ form.check_in }}
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold" style="font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);">Check-out</label>
+          {{ form.check_out }}
+        </div>
+        <div class="col-md-2">
+          <label class="form-label fw-semibold" style="font-size:.82rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-light);">Guests</label>
+          {{ form.guests }}
+        </div>
+        <div class="col-md-2">
+          <button type="submit" class="btn-primary-gold" style="padding:.7rem 1.5rem;width:100%;">
+            <i class="fas fa-search me-1"></i> Search
+          </button>
+        </div>
+        <div class="col-md-2">
+          <a href="{% url 'room_recommendations' %}" class="btn-hero-outline" style="display:flex;align-items:center;justify-content:center;gap:.4rem;color:var(--navy);border-color:var(--navy);padding:.7rem 1rem;">
+            <i class="fas fa-magic"></i> AI Pick
+          </a>
+        </div>
+      </div>
+    </form>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <span class="section-label">Available Rooms</span>
+      <h2 class="section-title mb-0" style="font-size:1.8rem;">{{ rooms|length }} Room{% if rooms|length != 1 %}s{% endif %} Found</h2>
+    </div>
+    <a href="{% url 'room_recommendations' %}" class="btn-view-room">
+      <i class="fas fa-magic me-1"></i> Try AI Recommendations
+    </a>
+  </div>
+
+  {% if rooms %}
+  <div class="row g-4">
+    {% for room in rooms %}
+    <div class="col-xl-4 col-md-6">
+      <div class="room-card">
+        <div class="room-card-img">
+          <img src="{{ room.room_type.image_url }}" alt="{{ room.room_type.name }}" onerror="this.style.display='none'">
+          <span class="room-badge available">Available</span>
+        </div>
+        <div class="room-card-body">
+          <div class="room-type-name">{{ room.room_type.name }}</div>
+          <div class="room-number">Room {{ room.room_number }} · Floor {{ room.floor_number }}</div>
+          <p class="text-muted small mb-3">{{ room.room_type.description|truncatechars:90 }}</p>
+          <div class="room-amenity-list">
+            <span class="amenity-tag"><i class="fas fa-users me-1"></i>{{ room.room_type.capacity }} guests</span>
+            <span class="amenity-tag"><i class="fas fa-wifi me-1"></i>WiFi</span>
+            <span class="amenity-tag"><i class="fas fa-snowflake me-1"></i>AC</span>
+          </div>
+          <div class="room-footer">
+            <div class="room-price">
+              <span class="price-amount">₹{{ room.room_type.price_per_night }}</span>
+              <span class="price-night">/night</span>
+            </div>
+            <a href="{% url 'room_detail' room.pk %}" class="btn-view-room">Details <i class="fas fa-arrow-right"></i></a>
+          </div>
+        </div>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="text-center py-5">
+    <i class="fas fa-bed" style="font-size:3rem;color:var(--text-light);margin-bottom:1rem;display:block;"></i>
+    <h4 style="font-family:'Cormorant Garamond',serif;">No rooms available for your criteria</h4>
+    <p class="text-muted mb-3">Try different dates or fewer guests.</p>
+    <a href="{% url 'room_list' %}" class="btn-view-room">Clear Filters</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

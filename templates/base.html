@@ -1,0 +1,128 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Hotel Royal Stay{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg navbar-main fixed-top">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'home' %}">
+      <img src="{% static 'images/logo.png' %}" alt="Hotel Royal Stay"
+           style="height:46px;width:46px;object-fit:contain;border-radius:6px;">
+      <div>
+        <span class="brand-name">Hotel Royal Stay</span>
+        <span class="brand-tagline d-block">Hyderabad</span>
+      </div>
+    </a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav ms-auto align-items-center gap-1">
+        <li class="nav-item"><a class="nav-link" href="{% url 'home' %}">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'room_list' %}">Rooms</a></li>
+        <li class="nav-item"><a class="nav-link" href="{% url 'room_recommendations' %}"><i class="fas fa-magic me-1"></i>AI Pick</a></li>
+        {% if user.is_authenticated %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'my_bookings' %}">My Bookings</a></li>
+          {% if user.is_staff %}
+            <li class="nav-item"><a class="nav-link nav-admin" href="{% url 'admin_dashboard' %}"><i class="fas fa-chart-line me-1"></i>Dashboard</a></li>
+          {% endif %}
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle user-pill" href="#" data-bs-toggle="dropdown">
+              <div class="user-avatar">{{ user.username|first|upper }}</div>
+              {{ user.username }}
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end">
+              <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>Profile</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+            </ul>
+          </li>
+        {% else %}
+          <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
+          <li class="nav-item"><a class="btn btn-book ms-2" href="{% url 'register' %}">Sign Up</a></li>
+        {% endif %}
+      </ul>
+    </div>
+  </div>
+</nav>
+
+<!-- MESSAGES -->
+{% if messages %}
+<div class="messages-wrapper">
+  {% for message in messages %}
+    <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+      <i class="fas fa-{% if message.tags == 'success' %}check-circle{% elif message.tags == 'error' %}exclamation-circle{% else %}info-circle{% endif %} me-2"></i>
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+<!-- MAIN -->
+<main>{% block content %}{% endblock %}</main>
+
+<!-- FOOTER -->
+<footer class="footer-main">
+  <div class="container">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <div class="d-flex align-items-center gap-2 mb-3">
+          <img src="{% static 'images/logo.png' %}" alt="Hotel Royal Stay"
+               style="height:42px;width:42px;object-fit:contain;border-radius:6px;">
+          <span class="footer-brand">Hotel Royal Stay</span>
+        </div>
+        <p class="footer-desc">Experience unparalleled luxury and world-class hospitality in the heart of Hyderabad's Hitech City.</p>
+        <div class="social-links mt-3">
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+        </div>
+      </div>
+      <div class="col-lg-2 col-6">
+        <h6 class="footer-heading">Quick Links</h6>
+        <ul class="footer-links">
+          <li><a href="{% url 'home' %}">Home</a></li>
+          <li><a href="{% url 'room_list' %}">Rooms</a></li>
+          <li><a href="{% url 'room_recommendations' %}">AI Picks</a></li>
+          {% if user.is_authenticated %}<li><a href="{% url 'my_bookings' %}">My Bookings</a></li>{% endif %}
+        </ul>
+      </div>
+      <div class="col-lg-3 col-6">
+        <h6 class="footer-heading">Contact</h6>
+        <ul class="footer-links">
+          <li><i class="fas fa-map-marker-alt me-2 text-gold"></i>Hitech City, Hyderabad</li>
+          <li><i class="fas fa-phone me-2 text-gold"></i>+91 7777711111</li>
+          <li><i class="fas fa-envelope me-2 text-gold"></i>info@hotelroyalstay.com</li>
+        </ul>
+      </div>
+      <div class="col-lg-3">
+        <h6 class="footer-heading">We Accept</h6>
+        <div class="payment-badges">
+          <span class="pay-badge"><i class="fas fa-bolt"></i> Razorpay</span>
+          <span class="pay-badge">UPI</span>
+          <span class="pay-badge"><i class="far fa-credit-card"></i> Cards</span>
+        </div>
+      </div>
+    </div>
+    <hr class="footer-divider">
+    <p class="footer-copy text-center mb-0">© {% now "Y" %} Hotel Royal Stay — All rights reserved</p>
+  </div>
+</footer>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>
