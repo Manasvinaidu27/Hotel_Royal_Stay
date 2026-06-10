@@ -5,7 +5,7 @@ A production-ready hotel management system built with Django, featuring AI-power
 
 ![Python](https://img.shields.io/badge/Python-3.11+-blue) ![Django](https://img.shields.io/badge/Django-5.1-green) ![PostgreSQL](https://img.shields.io/badge/Database-PostgreSQL-blue) ![License](https://img.shields.io/badge/License-MIT-yellow)
 
-🌐 **Live Demo:** [hotel-royal-stay.onrender.com](https://hotel-royal-stay.onrender.com)
+🌐 **Live Demo:** [hotel-royal-stay.onrender.com](https://hotel-royal-stay-blpo.onrender.com)
 
 ---
 
