@@ -21,7 +21,7 @@ from .forms import RoomSearchForm, BookingForm, PaymentForm, RoomReviewForm
 def home(request):
     #  AUTO CREATE DATA (only once)
     # ── HOME ──────────────────────────────────────────────────────────────────────
-def home(request):
+
     # Auto-create sample data only if database is empty
     if Room.objects.count() == 0:
 
