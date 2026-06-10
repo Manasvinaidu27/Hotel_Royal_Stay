@@ -20,18 +20,40 @@ from .forms import RoomSearchForm, BookingForm, PaymentForm, RoomReviewForm
 # ── HOME ──────────────────────────────────────────────────────────────────────
 def home(request):
     #  AUTO CREATE DATA (only once)
+    # ── HOME ──────────────────────────────────────────────────────────────────────
+def home(request):
+    # Auto-create sample data only if database is empty
     if Room.objects.count() == 0:
-        # Create Room Types
-        rt1 = RoomType.objects.create(name="Standard", capacity=2, price_per_night=1500, is_active=True)
-        rt2 = RoomType.objects.create(name="Deluxe", capacity=2, price_per_night=2500, is_active=True)
-        rt3 = RoomType.objects.create(name="Suite", capacity=4, price_per_night=4000, is_active=True)
 
-        # Create 20 Rooms
+        # Create Room Types
+        rt1 = RoomType.objects.create(
+            name="Standard",
+            capacity=2,
+            price_per_night=1500,
+            is_active=True
+        )
+
+        rt2 = RoomType.objects.create(
+            name="Deluxe",
+            capacity=2,
+            price_per_night=2500,
+            is_active=True
+        )
+
+        rt3 = RoomType.objects.create(
+            name="Suite",
+            capacity=4,
+            price_per_night=4000,
+            is_active=True
+        )
+
+        # Create Rooms
         for i in range(1, 21):
             Room.objects.create(
                 room_number=f"R{i:03}",
+                floor_number=((i - 1) // 5) + 1,  # Floors 1–4
                 room_type=rt1 if i <= 7 else rt2 if i <= 14 else rt3,
-                status="available",   #  IMPORTANT (matches your filter)
+                status="available",
                 is_active=True
             )
 
@@ -39,12 +61,15 @@ def home(request):
     total_rooms = Room.objects.filter(is_active=True).count()
     happy_guests = Booking.objects.exclude(status="cancelled").count()
 
-    return render(request, "hotel/home.html", {
-        "room_types": room_types,
-        "total_rooms": total_rooms,
-        "happy_guests": happy_guests,
-    })
-
+    return render(
+        request,
+        "hotel/home.html",
+        {
+            "room_types": room_types,
+            "total_rooms": total_rooms,
+            "happy_guests": happy_guests,
+        },
+    )
 
 # ── ROOM LIST ─────────────────────────────────────────────────────────────────
 def room_list(request):
