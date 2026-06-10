@@ -36,7 +36,7 @@ body {
   font-family: 'DM Sans', sans-serif;
   background: var(--ivory);
   color: var(--text-dark);
-  padding-top: 72px;
+  padding-top: 80px;
   line-height: 1.65;
 }
 
@@ -111,6 +111,7 @@ h1, h2, h3, .display-font {
   background: linear-gradient(135deg, var(--navy) 0%, var(--navy-light) 60%, #2c4a6e 100%);
   display: flex; align-items: center;
   position: relative; overflow: hidden;
+  padding-top: 3rem;
 }
 .hero::before {
   content: '';
@@ -369,7 +370,7 @@ h1, h2, h3, .display-font {
 
 /* Mobile (max 768px) */
 @media (max-width: 768px) {
-  body { padding-top: 65px; }
+  body { padding-top: 68px; }
 
   /* Hero */
   .hero { min-height: auto; padding: 3rem 0 2.5rem; text-align: center; }
