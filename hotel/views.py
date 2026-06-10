@@ -11,6 +11,7 @@ from django.views.decorators.csrf import csrf_exempt
 from datetime import date, timedelta
 import uuid
 import json
+from .models import Room
 
 from .models import RoomType, Room, Booking, Payment, RoomReview
 from .forms import RoomSearchForm, BookingForm, PaymentForm, RoomReviewForm
@@ -18,10 +19,26 @@ from .forms import RoomSearchForm, BookingForm, PaymentForm, RoomReviewForm
 
 # ── HOME ──────────────────────────────────────────────────────────────────────
 def home(request):
+    #  AUTO CREATE DATA (only once)
+    if Room.objects.count() == 0:
+        # Create Room Types
+        rt1 = RoomType.objects.create(name="Standard", capacity=2, price_per_night=1500, is_active=True)
+        rt2 = RoomType.objects.create(name="Deluxe", capacity=2, price_per_night=2500, is_active=True)
+        rt3 = RoomType.objects.create(name="Suite", capacity=4, price_per_night=4000, is_active=True)
+
+        # Create 20 Rooms
+        for i in range(1, 21):
+            Room.objects.create(
+                room_number=f"R{i:03}",
+                room_type=rt1 if i <= 7 else rt2 if i <= 14 else rt3,
+                status="available",   #  IMPORTANT (matches your filter)
+                is_active=True
+            )
+
     room_types = RoomType.objects.filter(is_active=True)[:3]
     total_rooms = Room.objects.filter(is_active=True).count()
-    # Count all non-cancelled bookings as "happy guests"
     happy_guests = Booking.objects.exclude(status="cancelled").count()
+
     return render(request, "hotel/home.html", {
         "room_types": room_types,
         "total_rooms": total_rooms,
